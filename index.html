@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Laman Minda Sihat — Klinik Kesihatan Kupang</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    :root {
+      --primary: #0d9488;
+      --primary-dark: #0f766e;
+      --primary-soft: #f0fdfa;
+      --accent: #059669;
+      --surface: #ffffff;
+      --bg: #f8fafc;
+      --bg-soft: #f0fdf4;
+      --text: #17233a;
+      --muted: #52606f;
+      --line: #dce7e3;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --amber: #b45309;
+      --amber-bg: #fffbeb;
+      --green-bg: #f0fdf4;
+      --blue-bg: #eef7ff;
+      --shadow: 0 10px 30px rgba(15, 118, 110, 0.10);
+      --radius: 16px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #2dd4bf;
+        --primary-dark: #99f6e4;
+        --primary-soft: #123332;
+        --surface: #12211f;
+        --bg: #0e1514;
+        --bg-soft: #132823;
+        --text: #edf7f5;
+        --muted: #b8c7c4;
+        --line: #2a403d;
+        --danger-bg: #3a171a;
+        --amber-bg: #33240f;
+        --green-bg: #142a20;
+        --blue-bg: #132631;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+    h1, h2, h3 {
+      font-family: 'Fraunces', Georgia, serif;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: 0.6; }
+
+    .tab-btn {
+      border: 2px solid var(--primary);
+      background: var(--surface);
+      color: var(--primary-dark);
+      padding: 0.62rem 1.05rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      transition: 0.18s ease;
+    }
+    .tab-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .opt-label {
+      flex: 1 1 140px;
+      border: 2px solid var(--line);
+      border-radius: 10px;
+      padding: 0.65rem 0.5rem;
+      text-align: center;
+      cursor: pointer;
+      font-weight: 700;
+      background: var(--surface);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      position: relative;
+      transition: 0.15s ease;
+    }
+    .opt-label:has(input:checked) {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+    }
+    .opt-label input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .field {
+      width: 100%;
+      padding: 0.8rem 0.9rem;
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 1rem;
+      background: var(--surface);
+      color: var(--text);
+    }
+    .field:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.18);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.35rem;
+      border-radius: 10px;
+      font-weight: 800;
+    }
+    .btn-primary:hover { background: var(--primary-dark); }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #1f2937;
+      border: none;
+      padding: 0.75rem 1.15rem;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+    @media (prefers-color-scheme: dark) {
+      .btn-secondary {
+        background: #2b3a38;
+        color: #fff;
+      }
+    }
+
+    .btn-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--primary);
+      color: #fff;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .btn-link:hover { background: var(--primary-dark); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // =========================================================================
+    // TETAPAN WEBHOOK KLINIK (GANTIKAN DENGAN URL GOOGLE APPS SCRIPT ANDA)
+    // Contoh: "https://script.google.com/macros/s/AKfycbx.../exec"
+    // =========================================================================
+    const WEBHOOK_URL = "PASTE_URL_WEBHOOK_DI_SINI";
+
+    const PHQ9_QUESTIONS = [
+      "Kurang minat atau keseronokan dalam melakukan sesuatu",
+      "Berasa murung, sedih atau tiada harapan",
+      "Sukar tidur / tidur terlalu banyak",
+      "Berasa letih atau kurang tenaga",
+      "Selera makan kurang / makan berlebihan",
+      "Berasa tidak baik tentang diri sendiri — atau rasa gagal / mengecewakan diri atau keluarga",
+      "Sukar menumpukan perhatian (cth: membaca / menonton TV)",
+      "Bergerak / bercakap sangat perlahan sehingga orang lain perasan — atau sebaliknya, gelisah / resah lebih daripada biasa",
+      "Fikiran bahawa lebih baik anda mati, atau fikiran mencederakan diri sendiri"
+    ];
+
+    const GAD7_QUESTIONS = [
+      "Berasa gementar, cemas atau gelisah",
+      "Tidak dapat berhenti atau mengawal kebimbangan",
+      "Terlalu bimbang tentang pelbagai perkara",
+      "Sukar untuk berehat",
+      "Sangat resah sehingga sukar duduk diam",
+      "Mudah rasa marah atau terganggu",
+      "Berasa takut seolah-olah sesuatu yang buruk akan berlaku"
+    ];
+
+    const SCALE_OPTIONS = [
+      { label: "Tidak langsung", value: 0 },
+      { label: "Beberapa hari", value: 1 },
+      { label: "Lebih separuh hari", value: 2 },
+      { label: "Hampir setiap hari", value: 3 }
+    ];
+
+    function getPhqSeverity(score) {
+      if (score <= 4) return "Minimal";
+      if (score <= 9) return "Ringan";
+      if (score <= 14) return "Sederhana";
+      if (score <= 19) return "Sederhana Teruk";
+      return "Teruk";
+    }
+
+    function getGadSeverity(score) {
+      if (score <= 4) return "Minimal";
+      if (score <= 9) return "Ringan";
+      if (score <= 14) return "Sederhana";
+      return "Teruk";
+    }
+
+    function App() {
+      const [activeTab, setActiveTab] = useState("infografik");
+      const [step, setStep] = useState("info");
+      const [clientName, setClientName] = useState("");
+      const [clientPhone, setClientPhone] = useState("");
+      const [infoError, setInfoError] = useState("");
+
+      const [whooley1, setWhooley1] = useState(null);
+      const [whooley2, setWhooley2] = useState(null);
+      const [gad2_1, setGad2_1] = useState(null);
+      const [gad2_2, setGad2_2] = useState(null);
+      const [stage1Error, setStage1Error] = useState("");
+
+      const [phq9Answers, setPhq9Answers] = useState(Array(9).fill(null));
+      const [gad7Answers, setGad7Answers] = useState(Array(7).fill(null));
+      const [stage2Error, setStage2Error] = useState("");
+      const [stage2Reason, setStage2Reason] = useState("");
+
+      const [gad2Score, setGad2Score] = useState(0);
+      const [phq9Score, setPhq9Score] = useState(0);
+      const [gad7Score, setGad7Score] = useState(0);
+      const [hasSelfHarm, setHasSelfHarm] = useState(false);
+
+      const [submitting, setSubmitting] = useState(false);
+      const [submitMsg, setSubmitMsg] = useState("");
+      const [submitOk, setSubmitOk] = useState(false);
+
+      const progressPct =
+        step === "info" ? 25 :
+        step === "stage1" ? 50 :
+        step === "stage2" ? 75 : 100;
+
+      const progressLabel =
+        step === "info" ? "Langkah 1 daripada 3 — Maklumat Klien" :
+        step === "stage1" ? "Peringkat 1 daripada 2 — Saringan Awal (Whooley & GAD-2)" :
+        step === "stage2" ? "Peringkat 2 daripada 2 — PHQ-9 & GAD-7" :
+        step === "early" ? "Saringan tamat — kedua-dua saringan negatif, PHQ-9 & GAD-7 tidak diperlukan." :
+        "Selesai — Keputusan PHQ-9 & GAD-7";
+
+      function resetAll() {
+        setStep("info");
+        setClientName("");
+        setClientPhone("");
+        setWhooley1(null);
+        setWhooley2(null);
+        setGad2_1(null);
+        setGad2_2(null);
+        setPhq9Answers(Array(9).fill(null));
+        setGad7Answers(Array(7).fill(null));
+        setInfoError("");
+        setStage1Error("");
+        setStage2Error("");
+        setStage2Reason("");
+        setSubmitMsg("");
+        setSubmitOk(false);
+      }
+
+      function handleStartScreening() {
+        if (!clientName.trim() || !clientPhone.trim()) {
+          setInfoError("Sila isi nama penuh dan nombor telefon sebelum meneruskan saringan.");
+          return;
+        }
+        setInfoError("");
+        setStep("stage1");
+      }
+
+      function handleStage1Next() {
+        if ([whooley1, whooley2, gad2_1, gad2_2].includes(null)) {
+          setStage1Error("Sila jawab semua 4 soalan Peringkat 1 dahulu.");
+          return;
+        }
+        setStage1Error("");
+        const isWhooleyPos = whooley1 === 1 || whooley2 === 1;
+        const g2 = (gad2_1 || 0) + (gad2_2 || 0);
+        const isGad2Pos = g2 >= 3;
+        setGad2Score(g2);
+
+        if (!isWhooleyPos && !isGad2Pos) {
+          setStep("early");
+          setSubmitMsg("");
+          setSubmitOk(false);
+        } else {
+          const reasons = [];
+          if (isWhooleyPos) reasons.push("Whooley positif (ada jawapan Ya)");
+          if (isGad2Pos) reasons.push(`GAD-2 positif (${g2} / 6, ≥ 3)`);
+          if (!isWhooleyPos) reasons.push("Whooley negatif");
+          if (!isGad2Pos) reasons.push(`GAD-2 negatif (${g2} / 6)`);
+          setStage2Reason(reasons.join(" • ") + ".");
+          setStep("stage2");
+        }
+      }
+
+      function handleStage2Next() {
+        if (phq9Answers.includes(null) || gad7Answers.includes(null)) {
+          setStage2Error("Sila jawab semua soalan PHQ-9 (9) dan GAD-7 (7) dahulu.");
+          return;
+        }
+        setStage2Error("");
+        const p9 = phq9Answers.reduce((acc, v) => acc + (v || 0), 0);
+        const g7 = gad7Answers.reduce((acc, v) => acc + (v || 0), 0);
+        setPhq9Score(p9);
+        setGad7Score(g7);
+        setHasSelfHarm((phq9Answers[8] || 0) > 0);
+        setStep("final");
+        setSubmitMsg("");
+        setSubmitOk(false);
+      }
+
+      async function handleSendRecord(mode) {
+        if (!WEBHOOK_URL || WEBHOOK_URL === "PASTE_URL_WEBHOOK_DI_SINI" || !/^https?:\/\/.+/i.test(WEBHOOK_URL)) {
+          setSubmitMsg("Sistem penghantaran belum dikonfigurasi oleh pentadbir klinik. Sila tunjukkan paparan keputusan ini kepada petugas Klinik Kesihatan Kupang.");
+          setSubmitOk(false);
+          return;
+        }
+
+        const isEarly = mode === "early";
+        const whooleyStatus = isEarly ? "Negatif" : (whooley1 === 1 || whooley2 === 1 ? "Positif" : "Negatif");
+        const g2Total = isEarly ? gad2Score : ((gad2_1 || 0) + (gad2_2 || 0));
+
+        const payload = {
+          timestamp: new Date().toLocaleString("ms-MY"),
+          nama: clientName.trim(),
+          telefon: clientPhone.trim(),
+          whooley: whooleyStatus,
+          gad2: `${g2Total} / 6`,
+          phq9: isEarly ? "Tidak Diperlukan" : `${phq9Score} / 27 (${getPhqSeverity(phq9Score)})`,
+          gad7: isEarly ? "Tidak Diperlukan" : `${gad7Score} / 21 (${getGadSeverity(gad7Score)})`,
+          status: isEarly
+            ? "Peringkat 1 Negatif (Saringan Tamat)"
+            : hasSelfHarm
+              ? "RISIKO TINGGI (Self-Harm)"
+              : (phq9Score >= 10 || gad7Score >= 10)
+                ? "Perlu Penilaian Lanjut"
+                : "Minimal/Ringan"
+        };
+
+        setSubmitting(true);
+        setSubmitMsg("Menghantar rekod ke klinik…");
+        setSubmitOk(false);
+
+        try {
+          await fetch(WEBHOOK_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
+          });
+          setSubmitMsg("Rekod saringan berjaya dihantar ke Klinik Kesihatan Kupang.");
+          setSubmitOk(true);
+        } catch (err) {
+          setSubmitMsg("Gagal menghantar rekod. Sila semak sambungan internet anda atau tunjukkan skrin ini kepada petugas klinik.");
+          setSubmitOk(false);
+        } finally {
+          setSubmitting(false);
+        }
+      }
+
+      function YesNoGroup({ value, onChange, nameAttr }) {
+        return (
+          <div className="flex flex-wrap gap-2">
+            {[1, 0].map((val) => (
+              <label key={val} className="opt-label">
+                <input
+                  type="radio"
+                  name={nameAttr}
+                  checked={value === val}
+                  onChange={() => onChange(val)}
+                />
+                <span>{val === 1 ? "Ya" : "Tidak"}</span>
+              </label>
+            ))}
+          </div>
+        );
+      }
+
+      function ScaleQuestion({ q, index, value, onChange, prefix }) {
+        return (
+          <div className="rounded-[10px] border border-[var(--line)] bg-[var(--bg)] p-4">
+            <h4 className="mb-3 font-bold text-[var(--primary-dark)]">
+              {index + 1}. {q}
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {SCALE_OPTIONS.map((opt) => (
+                <label key={opt.value} className="opt-label">
+                  <input
+                    type="radio"
+                    name={`${prefix}${index + 1}`}
+                    checked={value === opt.value}
+                    onChange={() => onChange(opt.value)}
+                  />
+                  <span>{opt.label} ({opt.value})</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col">
+          <header className="bg-gradient-to-br from-[#0f766e] to-[#0d9488] px-4 py-8 text-center text-white shadow-md sm:py-10">
+            <div className="mx-auto max-w-[1100px]">
+              <p className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-bold tracking-wide uppercase">
+                🧠 Klinik Kesihatan Kupang
+              </p>
+              <h1 className="text-[clamp(2rem,6vw,3.2rem)] font-bold">Laman Minda Sihat</h1>
+              <p className="mt-2 text-base italic opacity-90 sm:text-lg">“Minda Sihat, Hidup Sejahtera”</p>
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-white/90">
+                Ruang yang tenang untuk memahami emosi anda, belajar penjagaan kendiri, dan membuat saringan awal dengan panduan petugas klinik.
+              </p>
+            </div>
+          </header>
+
+          <div className="bg-[#dc2626] px-4 py-3 text-center text-white">
+            <p className="mx-auto flex max-w-[1100px] flex-wrap items-center justify-center gap-2 text-sm font-bold sm:text-base">
+              📞 Talian Bantuan Krisis Kesihatan Mental (HEAL): 15555
+            </p>
+          </div>
+
+          <nav className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--bg)]/95 py-3 backdrop-blur">
+            <div className="mx-auto flex max-w-[1100px] flex-wrap justify-center gap-2 px-4">
+              <button
+                className={`tab-btn ${activeTab === "infografik" ? "active" : ""}`}
+                onClick={() => setActiveTab("infografik")}
+              >
+                ℹ️ Infografik & Panduan
+              </button>
+              <button
+                className={`tab-btn ${activeTab === "video" ? "active" : ""}`}
+                onClick={() => setActiveTab("video")}
+              >
+                🎬 Hub Video Motivasi
+              </button>
+              <button
+                className={`tab-btn ${activeTab === "saringan" ? "active" : ""}`}
+                onClick={() => setActiveTab("saringan")}
+              >
+                📋 Saringan & Bantuan
+              </button>
+            </div>
+          </nav>
+
+          <main className="mx-auto w-full max-w-[1100px] flex-1 px-4 py-6">
+            {activeTab === "infografik" && (
+              <section>
+                <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-extrabold tracking-[0.18em] text-[#0d9488] uppercase">
+                      Panduan ringkas • Baca perlahan-lahan
+                    </p>
+                    <h2 className="mt-1 text-[clamp(1.6rem,4vw,2.3rem)]">Panduan Kesihatan Mental</h2>
+                  </div>
+                  <p className="max-w-md text-sm text-[var(--muted)]">
+                    Kesihatan mental bukan sekadar tiada penyakit — ia cara kita berfikir, merasai dan bertindak setiap hari.
+                  </p>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <article className="rounded-[var(--radius)] border-l-4 border-[#0d9488] bg-[var(--bg-soft)] p-5 shadow-sm">
+                    <h3 className="text-xl text-[#0f766e]">💚 Pengenalan Minda Sihat</h3>
+                    <p className="mt-2 leading-relaxed">
+                      Kesihatan mental merangkumi kesejahteraan emosi, psikologi, dan sosial kita. Ia mempengaruhi cara kita berfikir, merasai, dan bertindak dalam kehidupan seharian.
+                    </p>
+                    <p className="mt-3 rounded-lg bg-[var(--surface)] p-3 text-sm">
+                      <b>Ingat:</b> Meminta bantuan adalah tanda kekuatan, bukan kelemahan.
+                    </p>
+                  </article>
+
+                  <article className="rounded-[var(--radius)] border-l-4 border-[#0d9488] bg-[var(--bg-soft)] p-5 shadow-sm">
+                    <h3 className="text-xl text-[#0f766e]">⚠️ Tanda-tanda Awal Tekanan</h3>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 leading-relaxed">
+                      <li>Mudah marah atau emosi tidak stabil</li>
+                      <li>Gangguan tidur atau kerap letih</li>
+                      <li>Hilang minat terhadap aktiviti harian</li>
+                      <li>Sukar menumpukan perhatian</li>
+                    </ul>
+                    <p className="mt-3 text-sm text-[var(--muted)]">
+                      Jika tanda ini berlarutan, jangan tunggu — berbincanglah dengan petugas klinik.
+                    </p>
+                  </article>
+
+                  <article className="rounded-[var(--radius)] border-l-4 border-[#0d9488] bg-[var(--bg-soft)] p-5 shadow-sm">
+                    <h3 className="text-xl text-[#0f766e]">💡 Tips Penjagaan Kendiri</h3>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 leading-relaxed">
+                      <li>Lakukan senaman fizikal secara berkala</li>
+                      <li>Dapatkan tidur secukupnya (7–8 jam)</li>
+                      <li>Amalkan teknik pernafasan dalam</li>
+                      <li>Kongsi perasaan dengan orang yang dipercayai</li>
+                    </ul>
+                    <div className="mt-4 rounded-xl bg-[var(--surface)] p-3">
+                      <p className="text-sm font-bold">Latihan 1 minit</p>
+                      <p className="text-sm text-[var(--muted)]">
+                        Tarik nafas 4 saat • Tahan 4 saat • Hembus 6 saat. Ulang 4 kali.
+                      </p>
+                    </div>
+                  </article>
+
+                  <article className="rounded-[var(--radius)] border-l-4 border-[#0d9488] bg-[var(--bg-soft)] p-5 shadow-sm">
+                    <h3 className="text-xl text-[#0f766e]">🤝 Perkhidmatan Kami</h3>
+                    <p className="mt-2 leading-relaxed">
+                      Klinik Kesihatan Kupang menyediakan perkhidmatan kaunseling dan saringan awal kesihatan emosi. Sila rujuk anggota bertugas untuk maklumat lanjut.
+                    </p>
+                    <button className="btn-primary mt-4" onClick={() => setActiveTab("saringan")}>
+                      Mula Saringan →
+                    </button>
+                  </article>
+                </div>
+              </section>
+            )}
+
+            {activeTab === "video" && (
+              <section>
+                <p className="text-xs font-extrabold tracking-[0.18em] text-[#0d9488] uppercase">
+                  Tonton • Renung • Kongsi
+                </p>
+                <h2 className="mt-1 text-[clamp(1.6rem,4vw,2.3rem)]">Hub Video Motivasi & Emosi</h2>
+                <p className="mt-2 max-w-3xl text-[var(--muted)]">
+                  Video dimainkan di YouTube. Pilih satu video, tonton dengan tenang, dan perhatikan satu mesej yang ingin anda bawa pulang hari ini.
+                </p>
+
+                <div className="mt-5 grid gap-4 md:grid-cols-2">
+                  {[
+                    {
+                      n: "1",
+                      title: "Dr Yati — Pengurusan Emosi dan Kesihatan Mental",
+                      desc: "Panduan memahami emosi, mengenali pencetus tekanan, dan langkah awal mengurus perasaan dengan lebih sihat.",
+                      href: "https://www.youtube.com/watch?v=PGDNiLCjPBs"
+                    },
+                    {
+                      n: "2",
+                      title: "Film Pendek Inspiratif 1 Menit — BATU",
+                      desc: "Sebuah kisah pendek tentang beban yang kita pikul — dan keberanian untuk melepaskan apa yang tidak perlu dibawa lagi.",
+                      href: "https://www.youtube.com/watch?v=rPysfjP_NWg"
+                    }
+                  ].map((v) => (
+                    <article key={v.href} className="flex flex-col rounded-[var(--radius)] bg-[var(--surface)] p-5 shadow-[var(--shadow)]">
+                      <div className="flex h-36 flex-col justify-between rounded-xl bg-gradient-to-br from-[#0f766e] to-[#14b8a6] p-4 text-white">
+                        <span className="flex items-center justify-between">
+                          <span className="rounded-full bg-white/20 px-2 py-1 text-xs font-bold">VIDEO {v.n}</span>
+                          <span>🌿</span>
+                        </span>
+                        <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0f766e] font-bold">
+                          ▶
+                        </span>
+                      </div>
+                      <h3 className="mt-4 text-xl">{v.title}</h3>
+                      <p className="mt-2 flex-1 text-sm leading-relaxed text-[var(--muted)]">{v.desc}</p>
+                      <a className="btn-link mt-4 self-start" href={v.href} target="_blank" rel="noopener noreferrer">
+                        Tonton di YouTube ↗
+                      </a>
+                    </article>
+                  ))}
+                </div>
+
+                <div className="mt-4 flex items-start gap-2 rounded-xl bg-[var(--amber-bg)] p-4 text-sm">
+                  <span>✨</span>
+                  <p>
+                    Selepas menonton, anda boleh meneruskan ke{" "}
+                    <button className="font-bold text-[#0d9488] underline" onClick={() => setActiveTab("saringan")}>
+                      Saringan & Bantuan
+                    </button>{" "}
+                    jika anda mahu menilai keadaan emosi semasa anda.
+                  </p>
+                </div>
+              </section>
+            )}
+
+            {activeTab === "saringan" && (
+              <section className="mx-auto max-w-[760px]">
+                <p className="text-xs font-extrabold tracking-[0.18em] text-[#0d9488] uppercase">
+                  Ruang peribadi • Jawab dengan jujur
+                </p>
+                <h2 className="mt-1 text-[clamp(1.6rem,4vw,2.3rem)]">Saringan Kesihatan Emosi</h2>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
+                  Saringan 2 peringkat. <b>Peringkat 1:</b> Soalan Whooley (kemurungan) & GAD-2 (kebimbangan). Jika{" "}
+                  <b>kedua-dua saringan negatif</b>, saringan tamat. Jika mana-mana positif, anda akan dibawa ke{" "}
+                  <b>Peringkat 2:</b> PHQ-9 & GAD-7.
+                </p>
+
+                <div className="mt-3 flex items-start gap-2 rounded-xl bg-[var(--danger-bg)] p-3 text-sm">
+                  <span>🛡️</span>
+                  <p>
+                    <b>Ini bukan diagnosis.</b> Jika anda rasa tidak selamat / ada fikiran mencederakan diri, hubungi{" "}
+                    <b>HEAL 15555</b> atau ke klinik / kecemasan segera.
+                  </p>
+                </div>
+
+                <div className="mt-5 h-2.5 overflow-hidden rounded-full bg-[#e2e8f0]">
+                  <div className="h-full bg-[#0d9488] transition-all" style={{ width: `${progressPct}%` }} />
+                </div>
+                <p className="mt-2 text-sm text-[var(--muted)]">{progressLabel}</p>
+
+                <div className="mt-4 rounded-[var(--radius)] bg-[var(--surface)] p-5 shadow-[var(--shadow)] sm:p-6">
+                  {step === "info" && (
+                    <div>
+                      <h3 className="text-xl">Maklumat Klien</h3>
+                      <div className="mt-4 rounded-[10px] border border-[var(--line)] bg-[var(--bg)] p-4">
+                        <label className="mb-1 block font-bold text-[#0f766e]" htmlFor="clientName">
+                          👤 Nama Penuh *
+                        </label>
+                        <input
+                          id="clientName"
+                          className="field"
+                          value={clientName}
+                          onChange={(e) => setClientName(e.target.value)}
+                          placeholder="Masukkan nama penuh anda"
+                          autoComplete="name"
+                        />
+
+                        <label className="mt-4 mb-1 block font-bold text-[#0f766e]" htmlFor="clientPhone">
+                          📞 Nombor Telefon *
+                        </label>
+                        <input
+                          id="clientPhone"
+                          className="field"
+                          type="tel"
+                          value={clientPhone}
+                          onChange={(e) => setClientPhone(e.target.value)}
+                          placeholder="Contoh: 0123456789"
+                          autoComplete="tel"
+                        />
+                      </div>
+
+                      {infoError && <p role="alert" className="mt-3 font-bold text-[#dc2626]">{infoError}</p>}
+
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button className="btn-primary" onClick={handleStartScreening}>
+                          Mula Saringan →
+                        </button>
+                      </div>
+                      <p className="mt-3 text-sm text-[var(--muted)]">
+                        Maklumat ini hanya digunakan untuk rekod saringan yang anda pilih untuk dihantar ke klinik.
+                      </p>
+                    </div>
+                  )}
+
+                  {step === "stage1" && (
+                    <div>
+                      <h3 className="text-xl">A. Soalan Whooley — 2 Minggu Lepas</h3>
+                      <p className="mt-1 text-sm text-[var(--muted)]">Dalam 2 minggu lepas, adakah anda:</p>
+
+                      <div className="mt-3 space-y-3">
+                        <div className="rounded-[10px] border border-[var(--line)] bg-[var(--bg)] p-4">
+                          <h4 className="mb-3 font-bold">1. Berasa murung, sedih atau tiada harapan?</h4>
+                          <YesNoGroup value={whooley1} onChange={setWhooley1} nameAttr="whooley1" />
+                        </div>
+                        <div className="rounded-[10px] border border-[var(--line)] bg-[var(--bg)] p-4">
+                          <h4 className="mb-3 font-bold">
+                            2. Hilang minat atau keseronokan dalam melakukan perkara yang biasa anda nikmati?
+                          </h4>
+                          <YesNoGroup value={whooley2} onChange={setWhooley2} nameAttr="whooley2" />
+                        </div>
+                      </div>
+
+                      <h3 className="mt-5 text-xl">B. GAD-2 — 2 Minggu Lepas</h3>
+                      <p className="mt-1 text-sm text-[var(--muted)]">
+                        Berapa kerap anda diganggu oleh masalah berikut? (0 = Tidak langsung, 1 = Beberapa hari, 2 = Lebih separuh hari, 3 = Hampir setiap hari)
+                      </p>
+
+                      <div className="mt-3 space-y-3">
+                        <ScaleQuestion
+                          q="Berasa gementar, cemas atau gelisah"
+                          index={0}
+                          value={gad2_1}
+                          onChange={setGad2_1}
+                          prefix="gad2_"
+                        />
+                        <ScaleQuestion
+                          q="Tidak dapat berhenti atau mengawal kebimbangan"
+                          index={1}
+                          value={gad2_2}
+                          onChange={setGad2_2}
+                          prefix="gad2_"
+                        />
+                      </div>
+
+                      {stage1Error && <p role="alert" className="mt-3 font-bold text-[#dc2626]">{stage1Error}</p>}
+
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button className="btn-secondary" onClick={() => setStep("info")}>
+                          ← Kembali
+                        </button>
+                        <button className="btn-primary" onClick={handleStage1Next}>
+                          Semak & Teruskan →
+                        </button>
+                        <button className="btn-secondary" onClick={resetAll}>
+                          ↺ Mula Semula
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {step === "early" && (
+                    <div>
+                      <div className="rounded-[10px] border border-[#22c55e] bg-[var(--green-bg)] p-5">
+                        <h3 className="text-xl">✅ Saringan Tamat — Kedua-dua Saringan Negatif</h3>
+                        <div className="mt-3 rounded-md border-l-4 border-[#0284c7] bg-[var(--blue-bg)] p-3 font-semibold">
+                          <p>Nama: {clientName}</p>
+                          <p>No. Telefon: {clientPhone}</p>
+                        </div>
+                        <p className="mt-3">
+                          Terima kasih. Anda menjawab <b>Tidak</b> untuk kedua-dua soalan Whooley <b>dan</b> skor GAD-2 anda di bawah tahap positif.
+                        </p>
+
+                        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <div className="rounded-[10px] border border-[var(--line)] bg-[var(--surface)] p-4 text-center">
+                            <span>Whooley</span>
+                            <b className="block text-2xl text-[#0f766e]">Negatif</b>
+                            <span className="text-sm text-[var(--muted)]">Tiada jawapan Ya</span>
+                          </div>
+                          <div className="rounded-[10px] border border-[var(--line)] bg-[var(--surface)] p-4 text-center">
+                            <span>GAD-2</span>
+                            <b className="block text-2xl text-[#0f766e]">{gad2Score} / 6</b>
+                            <span className="text-sm text-[var(--muted)]">Negatif (&lt; 3)</span>
+                          </div>
+                        </div>
+
+                        <p className="mt-4">
+                          <b>Anda TIDAK perlu menjawab PHQ-9 dan GAD-7.</b>
+                        </p>
+                        <p className="mt-2 text-sm text-[var(--muted)]">
+                          Teruskan amalan penjagaan kendiri. Jika keadaan berubah atau anda rasa terbeban, datang ke Klinik Kesihatan Kupang atau hubungi HEAL 15555.
+                        </p>
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button className="btn-secondary" onClick={resetAll}>
+                          Ulang Saringan
+                        </button>
+                        <button
+                          className="btn-primary bg-[#059669]"
+                          disabled={submitting}
+                          onClick={() => handleSendRecord("early")}
+                        >
+                          📤 {submitting ? "Menghantar…" : "Hantar Rekod Saringan ke Klinik"}
+                        </button>
+                      </div>
+
+                      {submitMsg && (
+                        <p role="status" className={`mt-3 font-bold ${submitOk ? "text-[#16a34a]" : "text-[#dc2626]"}`}>
+                          {submitMsg}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {step === "stage2" && (
+                    <div>
+                      <div className="rounded-[10px] border border-[#f59e0b] bg-[var(--amber-bg)] p-4">
+                        <b>➡ Peringkat 2 diperlukan.</b> {stage2Reason} Sila lengkapkan PHQ-9 dan GAD-7 di bawah.
+                      </div>
+
+                      <h3 className="mt-5 text-xl">C. PHQ-9 — 2 Minggu Lepas</h3>
+                      <p className="mt-1 text-sm text-[var(--muted)]">
+                        0 = Tidak langsung, 1 = Beberapa hari, 2 = Lebih separuh hari, 3 = Hampir setiap hari
+                      </p>
+                      <div className="mt-3 space-y-3">
+                        {PHQ9_QUESTIONS.map((q, idx) => (
+                          <ScaleQuestion
+                            key={q}
+                            q={q}
+                            index={idx}
+                            value={phq9Answers[idx]}
+                            onChange={(val) =>
+                              setPhq9Answers((prev) => prev.map((item, i) => (i === idx ? val : item)))
+                            }
+                            prefix="phq"
+                          />
+                        ))}
+                      </div>
+
+                      <h3 className="mt-5 text-xl">D. GAD-7 — 2 Minggu Lepas</h3>
+                      <p className="mt-1 text-sm text-[var(--muted)]">
+                        0 = Tidak langsung, 1 = Beberapa hari, 2 = Lebih separuh hari, 3 = Hampir setiap hari
+                      </p>
+                      <div className="mt-3 space-y-3">
+                        {GAD7_QUESTIONS.map((q, idx) => (
+                          <ScaleQuestion
+                            key={q}
+                            q={q}
+                            index={idx}
+                            value={gad7Answers[idx]}
+                            onChange={(val) =>
+                              setGad7Answers((prev) => prev.map((item, i) => (i === idx ? val : item)))
+                            }
+                            prefix="gad7"
+                          />
+                        ))}
+                      </div>
+
+                      {stage2Error && <p role="alert" className="mt-3 font-bold text-[#dc2626]">{stage2Error}</p>}
+
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button className="btn-secondary" onClick={() => setStep("stage1")}>
+                          ← Kembali
+                        </button>
+                        <button className="btn-primary" onClick={handleStage2Next}>
+                          Lihat Keputusan
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {step === "final" && (
+                    <div>
+                      <h3 className="text-xl">Keputusan Saringan Anda</h3>
+                      <div className="mt-3 rounded-md border-l-4 border-[#0284c7] bg-[var(--blue-bg)] p-3 font-semibold">
+                        <p>Nama: {clientName}</p>
+                        <p>No. Telefon: {clientPhone}</p>
+                      </div>
+
+                      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="rounded-[10px] border border-[var(--line)] bg-[var(--bg)] p-4 text-center">
+                          <span>PHQ-9 (Kemurungan)</span>
+                          <b className="block text-3xl text-[#0f766e]">{phq9Score} / 27</b>
+                          <span className="text-sm text-[var(--muted)]">{getPhqSeverity(phq9Score)}</span>
+                        </div>
+                        <div className="rounded-[10px] border border-[var(--line)] bg-[var(--bg)] p-4 text-center">
+                          <span>GAD-7 (Kebimbangan)</span>
+                          <b className="block text-3xl text-[#0f766e]">{gad7Score} / 21</b>
+                          <span className="text-sm text-[var(--muted)]">{getGadSeverity(gad7Score)}</span>
+                        </div>
+                      </div>
+
+                      <div
+                        className={`mt-4 rounded-[10px] border p-5 ${
+                          hasSelfHarm
+                            ? "border-[#ef4444] bg-[var(--danger-bg)]"
+                            : phq9Score >= 10 || gad7Score >= 10
+                              ? "border-[#f59e0b] bg-[var(--amber-bg)]"
+                              : "border-[#22c55e] bg-[var(--green-bg)]"
+                        }`}
+                      >
+                        {hasSelfHarm ? (
+                          <>
+                            <h3 className="text-xl">Sila Dapatkan Bantuan Segera</h3>
+                            <p className="mt-2">
+                              Anda melaporkan ada fikiran mencederakan diri. Sila maklumkan petugas klinik dengan segera atau hubungi{" "}
+                              <b>HEAL 15555</b>.
+                            </p>
+                          </>
+                        ) : phq9Score >= 10 || gad7Score >= 10 ? (
+                          <>
+                            <h3 className="text-xl">Disarankan Rujukan / Penilaian Lanjut</h3>
+                            <p className="mt-2">
+                              Skor anda menunjukkan gejala sederhana atau lebih. Sila jumpa petugas Klinik Kesihatan Kupang untuk penilaian lanjut.
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <h3 className="text-xl">Teruskan Pemantauan Kendiri</h3>
+                            <p className="mt-2">
+                              Skor anda dalam julat ringan/minimal pada Peringkat 2. Teruskan penjagaan kendiri dan dapatkan bantuan jika gejala bertambah.
+                            </p>
+                          </>
+                        )}
+                      </div>
+
+                      <p className="mt-3 text-sm text-[var(--muted)]">
+                        Skor PHQ-9: 0–4 Minimal, 5–9 Ringan, 10–14 Sederhana, 15–19 Sederhana Teruk, 20–27 Teruk. Skor GAD-7: 0–4 Minimal, 5–9 Ringan, 10–14 Sederhana, 15–21 Teruk. Jika ada fikiran mencederakan diri (PHQ-9 Soalan 9 &gt; 0), sila maklumkan petugas / hubungi HEAL 15555 segera.
+                      </p>
+
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button className="btn-secondary" onClick={resetAll}>
+                          Ulang Saringan
+                        </button>
+                        <button
+                          className="btn-primary bg-[#059669]"
+                          disabled={submitting}
+                          onClick={() => handleSendRecord("final")}
+                        >
+                          📤 {submitting ? "Menghantar…" : "Hantar Rekod Saringan ke Klinik"}
+                        </button>
+                      </div>
+
+                      {submitMsg && (
+                        <p role="status" className={`mt-3 font-bold ${submitOk ? "text-[#16a34a]" : "text-[#dc2626]"}`}>
+                          {submitMsg}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+          </main>
+
+          <footer className="mt-8 bg-[#1e293b] px-4 py-6 text-center text-sm text-white">
+            <p>© 2026 Klinik Kesihatan Kupang, Kementerian Kesihatan Malaysia. Hak Cipta Terpelihara.</p>
+            <p className="mt-1 text-white/70">
+              Jika anda dalam krisis, hubungi HEAL 15555 atau dapatkan bantuan kecemasan segera.
+            </p>
+          </footer>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
